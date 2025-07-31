@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Face ASCII Mask Tool</title>
+  <style>
+    body { font-family: monospace; text-align:center; background:#111; color:white; }
+    .container { display:none; justify-content:center; gap:20px; margin-top:20px; }
+    .box { border:1px solid #444; padding:10px; background:#222; }
+    pre { font-size: 6px; line-height: 6px; white-space: pre; margin:0; }
+    .ascii-frame {
+      width: 500px;
+      height: 500px;
+      overflow: auto;
+      background: #111;
+      border: 1px solid #444;
+    }
+    button { margin-top:10px; padding:5px 10px; background:#444; color:white; border:none; cursor:pointer; }
+    input[type="range"] { width:200px; }
+  </style>
+</head>
+<body>
+  <h2>Face ASCII Mask Tool</h2>
+  
+  <input type="file" id="imageUpload" />
+  <br><br>
+  <label>Detail: <input type="range" id="detailSlider" min="1" max="5" value="2" /></label>
+  
+  <div class="container" id="outputContainer">
+    <div class="box">
+      <h3>Original Image</h3>
+      <img id="originalImage" style="max-width:500px;">
+    </div>
+    <div class="box">
+      <h3>ASCII Output</h3>
+      <div class="ascii-frame" id="asciiFrame">
+        <pre id="asciiOutput"></pre>
+      </div>
+      <button onclick="copyAscii()">Copy ASCII</button>
+    </div>
+  </div>
+
+  <!-- Load face-api.js -->
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+  <script>
+    let asciiText = "";
+    const TARGET_SIZE = 500; // resize target
+
+    async function init() {
+      console.log("Loading models...");
+      await faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/gh/vladmandic/face-api/model/');
+      console.log("Models loaded!");
+      
+      document.getElementById('imageUpload').addEventListener('change', resizeAndProcess);
+      document.getElementById('detailSlider').addEventListener('input', () => {
+        if (window.lastImage) generateAscii(window.lastImage);
+      });
+    }
+
+    function resizeAndProcess() {
+      const file = document.getElementById('imageUpload').files[0];
+      if (!file) return;
+
+      document.getElementById('outputContainer').style.display = "flex";
+
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = TARGET_SIZE;
+        canvas.height = TARGET_SIZE;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, TARGET_SIZE, TARGET_SIZE);
+
+        const resizedImg = new Image();
+        resizedImg.src = canvas.toDataURL();
+        resizedImg.onload = () => {
+          document.getElementById('originalImage').src = resizedImg.src;
+          window.lastImage = resizedImg;
+          generateAscii(resizedImg);
+        };
+      };
+      img.src = URL.createObjectURL(file);
+    }
+
+    async function generateAscii(img) {
+      const detections = await faceapi.detectAllFaces(img, new faceapi.TinyFaceDetectorOptions());
+      if (detections.length === 0) {
+        alert("No face detected!");
+        return;
+      }
+
+      const faceBox = detections[0].box;
+
+      const resizeCanvas = document.createElement('canvas');
+      resizeCanvas.width = TARGET_SIZE;
+      resizeCanvas.height = TARGET_SIZE;
+      const resizeCtx = resizeCanvas.getContext('2d');
+      resizeCtx.drawImage(
+        img,
+        faceBox.x, faceBox.y, faceBox.width, faceBox.height,
+        0, 0, TARGET_SIZE, TARGET_SIZE
+      );
+
+      const imageData = resizeCtx.getImageData(0, 0, TARGET_SIZE, TARGET_SIZE);
+      const asciiChars = "@#%*+=-:. ";
+      const step = parseInt(document.getElementById('detailSlider').value);
+
+      asciiText = "";
+      for (let y = 0; y < imageData.height; y += step) {
+        for (let x = 0; x < imageData.width; x += step) {
+          const idx = (y * imageData.width + x) * 4;
+          const avg = (imageData.data[idx] + imageData.data[idx+1] + imageData.data[idx+2]) / 3;
+          const charIndex = Math.floor((avg / 255) * (asciiChars.length - 1));
+          asciiText += asciiChars[charIndex];
+        }
+        asciiText += "\n";
+      }
+
+      document.getElementById("asciiOutput").textContent = asciiText;
+    }
+
+    function copyAscii() {
+      navigator.clipboard.writeText(asciiText).then(() => {
+        alert("ASCII copied to clipboard!");
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
