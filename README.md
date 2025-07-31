@@ -1,4 +1,4 @@
-# 🎭 Face ASCII Mask Tool
+# Face ASCII Mask Tool
 
 A simple web tool that:
 - Detects a face from an uploaded image
@@ -9,7 +9,7 @@ A simple web tool that:
 
 ---
 
-## 🚀 Features
+## Features
 - **Face detection** powered by [face-api.js](https://github.com/justadudewhohacks/face-api.js)
 - **Automatic resize** to 40x40 for consistent ASCII output
 - **Adjustable detail slider** to change ASCII resolution
@@ -19,7 +19,7 @@ A simple web tool that:
 ---
 
 ## 📂 Live Demo
-👉 *(Add your GitHub Pages / hosted link here)*
+👉 *https://theamazingyogita.github.io/ASCII_converter/*
 
 ---
 
@@ -32,10 +32,3 @@ A simple web tool that:
 5. Copy ASCII with the **Copy ASCII** button
 
 ---
-
-## 📸 Screenshot
-*(Add a screenshot of Original Image + ASCII Output side-by-side here)*
-
----
-
-## 🗂️ Project Structure
