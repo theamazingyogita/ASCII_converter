@@ -28,7 +28,7 @@
   <div class="container" id="outputContainer">
     <div class="box">
       <h3>Original Image</h3>
-      <img id="originalImage" style="max-width:500px;">
+      <img id="originalImage" style="max-width:300px;">
     </div>
     <div class="box">
       <h3>ASCII Output</h3>
@@ -44,7 +44,7 @@
 
   <script>
     let asciiText = "";
-    const TARGET_SIZE = 500; // resize target
+    const TARGET_SIZE = 500; // internal resize for performance
 
     async function init() {
       console.log("Loading models...");
